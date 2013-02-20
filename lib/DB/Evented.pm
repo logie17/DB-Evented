@@ -134,7 +134,7 @@ sub execute_in_parallel {
       };
       my $req_method = pop @$item;
       $self->{cv}->begin;
-      &AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, (caller)[1,2], $req_method, @$item);
+      AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, (caller)[1,2], $req_method, @$item);
       $count++;
     }
     $self->{cv}->recv;
@@ -271,4 +271,4 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
-1; # End of Shutterstock::DB::Evented
+1; # End of DB::Evented

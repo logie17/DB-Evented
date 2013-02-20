@@ -15,11 +15,13 @@ tests_recursive('t');
 resources (
    homepage   => 'http://www.shutterstock.com',
    license    => 'http://www.perlfoundation.org/artistic_license_2_0',
+   repository => 'git://github.shuttercorp.net/lbell/DB-Evented.git',
    bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=DB-Evented',
 );
 
 configure_requires (
    'Module::Install' => 0,
+	 'inc::Module::Install' => 0,
 );
 
 build_requires (
