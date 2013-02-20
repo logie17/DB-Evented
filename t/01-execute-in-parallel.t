@@ -7,7 +7,7 @@ use File::Temp qw(tempfile);
 use AnyEvent;
 use DB::Evented;
 
-use Test::Most tests => 2;
+use Test::Most tests => 4;
 
 my ($dh, $dname) = tempfile;
 close $dh;
@@ -55,7 +55,9 @@ $evented->selectrow_hashref(
   }
 );
 
+is @{$evented->{_queue}}, 2, "We should have 2 items in the queue to be executed";
 $evented->execute_in_parallel;
+is @{$evented->{_queue}}, 0, "We should have no items in the queue to be executed";
 
 is_deeply $results, { 'result2' => { 'test1' => '1', 'test2' => 'foobar' }, 'result1' => [ '1', 'foobar' ] }, "Parallel results come back with data";
 

@@ -95,6 +95,16 @@ sub any_event_handler {
   });
 }
 
+=head2 clear_queue
+
+Clears the queue of any db todos
+
+=cut
+
+sub clear_queue {
+  $_[0]->{_queue} = undef;
+}
+
 =head2 execute_in_parallel
 
 Will execute all of the queued statements in parallel. This will create a pool of handlers and cache them if necessary.
@@ -128,6 +138,7 @@ sub execute_in_parallel {
     }
     $self->{cv}->recv;
     delete $self->{cv};
+    $self->clear_queue;
   }
 }
 
