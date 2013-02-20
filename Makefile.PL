@@ -20,19 +20,22 @@ resources (
 );
 
 configure_requires (
-   'Module::Install' => 0,
+   'Module::Install'      => 0,
 	 'inc::Module::Install' => 0,
 );
 
 build_requires (
-   'Test::Most' => 0,
-   'DBD::Sqlite2' => 0,
+   'Test::Most'   => 0,
+   'DBD::SQLite' => 0,
 );
 
 requires (
-   'strictures'    => 0,
-   'AnyEvent'      => 0,
-   'AnyEvent::DBI' => 0,
+   'indirect'              => 0,
+	 'multidimensional'      => 0,
+	 'bareword::filehandles' => 0,
+   'strictures'            => 0,
+   'AnyEvent'              => 0,
+   'AnyEvent::DBI'         => 0,
 );
 
 install_as_cpan;

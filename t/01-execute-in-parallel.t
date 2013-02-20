@@ -12,7 +12,7 @@ use Test::Most tests => 4;
 my ($dh, $dname) = tempfile;
 close $dh;
 
-my $evented = DB::Evented->new("DBI:SQLite2:dbname=$dname", "","");
+my $evented = DB::Evented->new("DBI:SQLite:dbname=$dname", "","");
 
 my $dbh = $evented->any_event_handler;
 my ($error, $result);
