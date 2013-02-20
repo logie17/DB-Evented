@@ -91,7 +91,8 @@ under the hood. What does this mean? It means that if you use an AnyEvent::DBI m
 sub any_event_handler {
   my $self = shift;
   return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, on_error => sub {
-    warn "DBI Error: $@ at $_[1]:$_[2]\n";
+    $self->clear_queue;
+    die "DBI Error: $@ at $_[1]:$_[2]\n";
   });
 }
 
