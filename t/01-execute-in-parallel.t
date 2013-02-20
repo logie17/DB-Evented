@@ -60,7 +60,7 @@ $evented->execute_in_parallel;
 is_deeply $results, { 'result2' => { 'test1' => '1', 'test2' => 'foobar' }, 'result1' => [ '1', 'foobar' ] }, "Parallel results come back with data";
 
 END {
-	unlink $dname;
+  unlink $dname;
 }
 
 1;

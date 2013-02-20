@@ -29,7 +29,7 @@ build_requires (
 
 requires (
    'strictures'    => 0,
-	 'AnyEvent'      => 0,
+   'AnyEvent'      => 0,
    'AnyEvent::DBI' => 0,
 );
 

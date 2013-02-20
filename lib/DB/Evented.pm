@@ -22,43 +22,43 @@ our $handlers = [];
 Doing selects in synchronise order is not always the most efficient way to interact with the 
 Database. 
 
-	use DB::Evented;
+  use DB::Evented;
 
-	my $evented = DB::Evented->new("DBI:SQLite2:dbname=$dname", "","");
+  my $evented = DB::Evented->new("DBI:SQLite2:dbname=$dname", "","");
 
-	my $results;
-	$evented->selectcol_arrayref(
-	  q{
-	    select
-	      test1,
-	      test2
-	    from
-	      test
-	  },
-	  { 
-	    Columns => [1,2],
-	    response => sub {
-	        $results->{result1} = shift;
-	    }		
-	  }
-	);
-	
-	$evented->selectrow_hashref(
-	  q{
-	    select
-	      test1,
-	      test2
-	    from
-	      test
-	  },
-	  {
-	    response => sub {
-	      $results->{result2} = shift;
-	    }
-	  }
-	);
+  my $results;
+  $evented->selectcol_arrayref(
+    q{
+      select
+        test1,
+        test2
+      from
+        test
+    },
+    { 
+      Columns => [1,2],
+      response => sub {
+          $results->{result1} = shift;
+      }		
+    }
+  );
+  
+  $evented->selectrow_hashref(
+    q{
+      select
+        test1,
+        test2
+      from
+        test
+    },
+    {
+      response => sub {
+        $results->{result2} = shift;
+      }
+    }
+  );
 
-	$evented->execute_in_parallel;
+  $evented->execute_in_parallel;
 
 =head1 STATIC METHODS
 
@@ -70,14 +70,14 @@ See AnyEvent::DBI for more information.
 =cut
 
 sub new {
-	my $class = shift;
-	$class ||= ref $class;
-	return bless {
-		connection_str => $_[0],
-		username => $_[1],
-		pass => $_[2],
-		_queue => [],
-	}, $class;
+  my $class = shift;
+  $class ||= ref $class;
+  return bless {
+    connection_str => $_[0],
+    username => $_[1],
+    pass => $_[2],
+    _queue => [],
+  }, $class;
 }
 
 =head1 INSTANCE METHODS
@@ -89,10 +89,10 @@ under the hood. What does this mean? It means that if you use an AnyEvent::DBI m
 
 =cut
 sub any_event_handler {
-	my $self = shift;
-	return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, on_error => sub {
-		warn "DBI Error: $@ at $_[1]:$_[2]\n";
-	});
+  my $self = shift;
+  return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, on_error => sub {
+    warn "DBI Error: $@ at $_[1]:$_[2]\n";
+  });
 }
 
 =head2 execute_in_parallel
@@ -102,52 +102,52 @@ Will execute all of the queued statements in parallel. This will create a pool o
 =cut
 
 sub execute_in_parallel {
-	my $self = shift;
-	if ( scalar @{$self->{_queue}} ) {
-		# Setup a pool of handlers
-		# TODO: Make this more intelligent to shrink
-		unless ( scalar @{$handlers} || ( @{$handlers} > @{$self->{_queue}} )) {
-			for my $item (@{$self->{_queue}} ) {
-				push @{$handlers}, $self->any_event_handler;
-			}
-		}
-		$self->{cv} = AnyEvent->condvar;
-		my %handlers;
-		my $count = 0;
-		for my $item ( @{$self->{_queue}} ) {
-			my $cb = pop @$item;
-			my $callback_wrapper = sub { 
-				my ($dbh, $result) = @_;
-				$cb->($result, $dbh);
-				$self->{cv}->end;
-			};
-			my $req_method = pop @$item;
-			$self->{cv}->begin;
-			&AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, (caller)[1,2], $req_method, @$item);
-			$count++;
-		}
-		$self->{cv}->recv;
-		delete $self->{cv};
-	}
+  my $self = shift;
+  if ( scalar @{$self->{_queue}} ) {
+    # Setup a pool of handlers
+    # TODO: Make this more intelligent to shrink
+    unless ( scalar @{$handlers} || ( @{$handlers} > @{$self->{_queue}} )) {
+      for my $item (@{$self->{_queue}} ) {
+        push @{$handlers}, $self->any_event_handler;
+      }
+    }
+    $self->{cv} = AnyEvent->condvar;
+    my %handlers;
+    my $count = 0;
+    for my $item ( @{$self->{_queue}} ) {
+      my $cb = pop @$item;
+      my $callback_wrapper = sub { 
+        my ($dbh, $result) = @_;
+        $cb->($result, $dbh);
+        $self->{cv}->end;
+      };
+      my $req_method = pop @$item;
+      $self->{cv}->begin;
+      &AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, (caller)[1,2], $req_method, @$item);
+      $count++;
+    }
+    $self->{cv}->recv;
+    delete $self->{cv};
+  }
 }
 
 sub _add_to_queue {
-	my ( $self, $sql, $attr, @args) = @_;
+  my ( $self, $sql, $attr, @args) = @_;
 
-	my $cb = delete $attr->{response};
-	my $item = [$sql, $attr, @args, __PACKAGE__ . '::_req_dispatch', $cb]; 
+  my $cb = delete $attr->{response};
+  my $item = [$sql, $attr, @args, __PACKAGE__ . '::_req_dispatch', $cb]; 
 
-	push @{$self->{_queue}}, $item;
+  push @{$self->{_queue}}, $item;
 }
 
 sub _req_dispatch {
-	my (undef, $st, $attr, @args) = @{+shift};
+  my (undef, $st, $attr, @args) = @{+shift};
 
-	my $method_name = pop @args;
-	my $result = $AnyEvent::DBI::DBH->$method_name($st, $attr, @args)
-		or die [$DBI::errstr];
+  my $method_name = pop @args;
+  my $result = $AnyEvent::DBI::DBH->$method_name($st, $attr, @args)
+    or die [$DBI::errstr];
 
-	[1, $result ? $result : undef];
+  [1, $result ? $result : undef];
 }
 
 =head2 selectrow_arrayref ($sql, \%attr, @binds )
@@ -167,11 +167,11 @@ can be accessed in the response attribute call back
 =cut
 
 for my $method_name ( qw(selectrow_hashref selectcol_arrayref) ) {
-	no strict 'refs';
-	*{$method_name} = sub {
-		my $self = shift;
-		$self->_add_to_queue(@_, $method_name);
-	};
+  no strict 'refs';
+  *{$method_name} = sub {
+    my $self = shift;
+    $self->_add_to_queue(@_, $method_name);
+  };
 }
 
 =head1 AUTHOR
