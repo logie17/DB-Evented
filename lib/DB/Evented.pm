@@ -144,23 +144,38 @@ sub execute_in_parallel {
 }
 
 sub _add_to_queue {
-  my ( $self, $sql, $attr, @args) = @_;
+  my ( $self, $sql, $attr, $key_field, @args) = @_;
 
   my $cb = delete $attr->{response};
-  my $item = [$sql, $attr, @args, __PACKAGE__ . '::_req_dispatch', $cb]; 
+  my $item = [$sql, $attr, $key_field, @args, __PACKAGE__ . '::_req_dispatch', $cb]; 
 
   push @{$self->{_queue}}, $item;
 }
 
 sub _req_dispatch {
-  my (undef, $st, $attr, @args) = @{+shift};
-
+  my (undef, $st, $attr, $key_field, @args) = @{+shift};
   my $method_name = pop @args;
-  my $result = $AnyEvent::DBI::DBH->$method_name($st, $attr, @args)
+  my $result = $AnyEvent::DBI::DBH->$method_name($key_field ? ($st, $key_field, $attr, @args) : ($st, $attr, @args) )
     or die [$DBI::errstr];
 
   [1, $result ? $result : undef];
 }
+
+=head2 selectall_arrayref ($sql, \%attr, @binds )
+
+This method functions in the same way as DBI::selectall_arrayref. The key difference
+being it delays the execution until execute_in_parallel has been called. The results
+can be accessed in the response attribute call back 
+
+=cut
+
+=head2 selectall_hashref ($sql, $key_field, \%attr, @binds )
+
+This method functions in the same way as DBI::selectall_hashref. The key difference
+being it delays the execution until execute_in_parallel has been called. The results
+can be accessed in the response attribute call back 
+
+=cut
 
 =head2 selectrow_arrayref ($sql, \%attr, @binds )
 
@@ -178,11 +193,12 @@ can be accessed in the response attribute call back
 
 =cut
 
-for my $method_name ( qw(selectrow_hashref selectcol_arrayref) ) {
+for my $method_name ( qw(selectrow_hashref selectcol_arrayref selectall_hashref selectall_arrayref) ) {
   no strict 'refs';
   *{$method_name} = sub {
     my $self = shift;
-    $self->_add_to_queue(@_, $method_name);
+    my ($sql, $key_field, $attr, @args) = (shift, ($method_name eq 'selectall_hashref' ? (shift) : (undef)), shift, @_);
+    $self->_add_to_queue($sql, $attr, $key_field, @args, $method_name);
   };
 }
 
