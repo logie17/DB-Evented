@@ -92,8 +92,18 @@ sub any_event_handler {
   my $self = shift;
   return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, on_error => sub {
     $self->clear_queue;
-    die "DBI Error: $@ at $_[1]:$_[2]\n";
+    warn "DBI Error: $@ at $_[1]:$_[2]\n";
   });
+}
+
+=head2 clear_handlers
+
+Clears all handlers
+
+=cut
+
+sub clear_handlers {
+  $handlers = [];
 }
 
 =head2 clear_queue
@@ -117,13 +127,12 @@ sub execute_in_parallel {
   if ( scalar @{$self->{_queue}} ) {
     # Setup a pool of handlers
     # TODO: Make this more intelligent to shrink
-    unless ( scalar @{$handlers} || ( @{$handlers} > @{$self->{_queue}} )) {
-      for my $item (@{$self->{_queue}} ) {
+    if ( ! scalar @{$handlers} || ( scalar @{$handlers} < scalar @{$self->{_queue}} )) {
+      while ( scalar @{$handlers} < scalar @{$self->{_queue}} ) {
         push @{$handlers}, $self->any_event_handler;
       }
     }
     $self->{cv} = AnyEvent->condvar;
-    my %handlers;
     my $count = 0;
     for my $item ( @{$self->{_queue}} ) {
       my $cb = pop @$item;
@@ -133,14 +142,17 @@ sub execute_in_parallel {
         $self->{cv}->end;
       };
       my $req_method = pop @$item;
+      my $line = pop @$item;
+      my $file = pop @$item;
       $self->{cv}->begin;
-      AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, (caller)[1,2], $req_method, @$item);
+      AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, $line, $file, $req_method, @$item);
       $count++;
     }
     $self->{cv}->recv;
     delete $self->{cv};
     $self->clear_queue;
   }
+  return;
 }
 
 sub _add_to_queue {
@@ -155,9 +167,7 @@ sub _add_to_queue {
 sub _req_dispatch {
   my (undef, $st, $attr, $key_field, @args) = @{+shift};
   my $method_name = pop @args;
-  my $result = $AnyEvent::DBI::DBH->$method_name($key_field ? ($st, $key_field, $attr, @args) : ($st, $attr, @args) )
-    or die [$DBI::errstr];
-
+  my $result = $AnyEvent::DBI::DBH->$method_name($key_field ? ($st, $key_field, $attr, @args) : ($st, $attr, @args) );
   [1, $result ? $result : undef];
 }
 
@@ -198,8 +208,19 @@ for my $method_name ( qw(selectrow_hashref selectcol_arrayref selectall_hashref 
   *{$method_name} = sub {
     my $self = shift;
     my ($sql, $key_field, $attr, @args) = (shift, ($method_name eq 'selectall_hashref' ? (shift) : (undef)), shift, @_);
-    $self->_add_to_queue($sql, $attr, $key_field, @args, $method_name);
+    $self->_add_to_queue($sql, $attr, $key_field, @args, $method_name, (caller)[1,2]);
   };
+}
+
+END {
+  my $error = do {
+    local $@;
+    eval {
+      DB::Evented->clear_handlers;
+    };
+    $@;
+  };
+  $? = 0 unless $error;
 }
 
 =head1 AUTHOR
