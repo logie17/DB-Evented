@@ -75,19 +75,19 @@ $evented->selectall_arrayref(
 );
 
 $evented->selectall_hashref(
-	q{
+  q{
   select
     test1,
     test2
   from
     test
   },
-	'test1',
-	{
-		response => sub {
-			$results->{result4} = shift;
-		}
-	}
+  'test1',
+  {
+    response => sub {
+      $results->{result4} = shift;
+    }
+  }
 );
 
 is @{$evented->{_queue}}, 4, "We should have 2 items in the queue to be executed";
