@@ -10,11 +10,11 @@ DB::Evented - A pragmatic DBI like evented module.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $handlers = [];
 
 =head1 SYNOPSIS
@@ -212,6 +212,7 @@ for my $method_name ( qw(selectrow_hashref selectcol_arrayref selectall_hashref 
   };
 }
 
+# TODO: Investigate if this is the bet way to handle this.
 END {
   my $error = do {
     local $@;

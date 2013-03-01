@@ -2,7 +2,7 @@ NAME
     DB::Evented - A pragmatic DBI like evented module.
 
 VERSION
-    Version 0.01
+    Version 0.03
 
 SYNOPSIS
     Doing selects in synchronise order is not always the most efficient way
@@ -58,12 +58,27 @@ INSTANCE METHODS
     does this mean? It means that if you use an AnyEvent::DBI method it will
     run asynchronously.
 
+  clear_handlers
+    Clears all handlers
+
   clear_queue
     Clears the queue of any db todos
 
   execute_in_parallel
     Will execute all of the queued statements in parallel. This will create
     a pool of handlers and cache them if necessary.
+
+  selectall_arrayref ($sql, \%attr, @binds )
+    This method functions in the same way as DBI::selectall_arrayref. The
+    key difference being it delays the execution until execute_in_parallel
+    has been called. The results can be accessed in the response attribute
+    call back
+
+  selectall_hashref ($sql, $key_field, \%attr, @binds )
+    This method functions in the same way as DBI::selectall_hashref. The key
+    difference being it delays the execution until execute_in_parallel has
+    been called. The results can be accessed in the response attribute call
+    back
 
   selectrow_arrayref ($sql, \%attr, @binds )
     This method functions in the same way as DBI::selectrow_arrayref. The
@@ -78,14 +93,15 @@ INSTANCE METHODS
     back
 
 AUTHOR
-    Logan Bell, `<logie at cpan.org>'
+    Logan Bell, "<logie at cpan.org>"
 
 BUGS
     Please report any bugs or feature requests to
-    `bug-shutterstock-db-evented at rt.cpan.org', or through the web
-    interface at http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DB-Evented.
-    I will be notified, and then you'll automatically be notified of
-    progress on your bug as I make changes.
+    "bug-shutterstock-db-evented at rt.cpan.org", or through the web
+    interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DB-Evented>. I will be
+    notified, and then you'll automatically be notified of progress on your
+    bug as I make changes.
 
 SUPPORT
     You can find documentation for this module with the perldoc command.
@@ -95,16 +111,16 @@ SUPPORT
     You can also look for information at:
 
     * RT: CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=DB-Evented
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=DB-Evented>
 
     * AnnoCPAN: Annotated CPAN documentation
-        http://annocpan.org/dist/DB-Evented
+        <http://annocpan.org/dist/DB-Evented>
 
     * CPAN Ratings
-        http://cpanratings.perl.org/d/DB-Evented
+        <http://cpanratings.perl.org/d/DB-Evented>
 
     * Search CPAN
-        http://search.cpan.org/dist/DB-Evented/
+        <http://search.cpan.org/dist/DB-Evented/>
 
 ACKNOWLEDGEMENTS
     Mom, Aaron Cohen, and Belden Lyman and thanks to Shutterstock for
@@ -117,7 +133,7 @@ LICENSE AND COPYRIGHT
     under the terms of the the Artistic License (2.0). You may obtain a copy
     of the full license at:
 
-    http://www.perlfoundation.org/artistic_license_2_0
+    <http://www.perlfoundation.org/artistic_license_2_0>
 
     Any use, modification, and distribution of the Standard or Modified
     Versions is governed by this Artistic License. By using, modifying or
