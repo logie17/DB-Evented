@@ -10,11 +10,11 @@ DB::Evented - A pragmatic DBI like evented module.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $handlers = [];
 
 =head1 SYNOPSIS
@@ -213,6 +213,8 @@ for my $method_name ( qw(selectrow_hashref selectcol_arrayref selectall_hashref 
 }
 
 # TODO: Investigate if this is the bet way to handle this.
+# The child processes are technically held by AnyEvent::DBI
+# by clearing the known handlers these children *should* be reaped
 sub DESTROY {
 	my $error = do {
     local $@;
