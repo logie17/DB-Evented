@@ -213,8 +213,8 @@ for my $method_name ( qw(selectrow_hashref selectcol_arrayref selectall_hashref 
 }
 
 # TODO: Investigate if this is the bet way to handle this.
-END {
-  my $error = do {
+sub DESTROY {
+	my $error = do {
     local $@;
     eval {
       DB::Evented->clear_handlers;

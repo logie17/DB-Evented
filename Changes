@@ -1,5 +1,11 @@
 Revision history for DB-Evented
 
+0.04		03-04-2013
+				Modified how handlers are destroyed.
+				
+0.03 		03-01-2013
+				Documentation tweaks
+
 0.02    02-20-2013
         Pre-release various bug fixes
 
