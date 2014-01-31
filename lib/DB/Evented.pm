@@ -10,7 +10,7 @@ DB::Evented - A pragmatic DBI like evented module.
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 our $handlers = [];
 
 =head1 SYNOPSIS
@@ -68,10 +68,12 @@ See AnyEvent::DBI for more information.
 sub new {
   my $class = shift;
   $class ||= ref $class;
+  my ($connection_str, $username, $pass, %dbi_args) = @_;
   return bless {
-    connection_str => $_[0],
-    username => $_[1],
-    pass => $_[2],
+    connection_str => $connection_str,
+    username => $username,
+    pass => $pass,
+    dbi_args => \%dbi_args,
     _queue => [],
   }, $class;
 }
@@ -86,7 +88,7 @@ under the hood. What does this mean? It means that if you use an AnyEvent::DBI m
 =cut
 sub any_event_handler {
   my $self = shift;
-  return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, on_error => sub {
+  return AnyEvent::DBI->new($self->{connection_str}, $self->{username}, $self->{pass}, %{$self->{dbi_args}}, on_error => sub {
     $self->clear_queue;
     warn "DBI Error: $@ at $_[1]:$_[2]\n";
   });
@@ -141,7 +143,7 @@ sub execute_in_parallel {
       my $line = pop @$item;
       my $file = pop @$item;
       $self->{cv}->begin;
-      AnyEvent::DBI::_req($handlers->[$count], $callback_wrapper, $line, $file, $req_method, @$item);
+      $handlers->[$count]->_req($callback_wrapper, $line, $file, $req_method, @$item);
       $count++;
     }
     $self->{cv}->recv;
