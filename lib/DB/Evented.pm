@@ -58,7 +58,7 @@ Database.
 
 =head1 STATIC METHODS
 
-=head2 new ($connection_str, $username, $pass, %other_anyevent_dbi_params )
+=head2 new ($connection_str, $username, $pass, %dbi_args )
 
 In order to initialize a DB::Evented object a connection_str is most likely required.
 See AnyEvent::DBI for more information.

@@ -1,5 +1,8 @@
 Revision history for DB-Evented
 
+0.06    02-03-2014
+        "The Late AC" release. Includes the ability to pass in dbi arguments.
+
 0.05    04-24-2013
         Unleashed on cpan
 
