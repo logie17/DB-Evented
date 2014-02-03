@@ -7,14 +7,16 @@ use File::Temp qw(tempfile);
 use AnyEvent;
 use DB::Evented;
 
-use Test::Most tests => 4;
+use Test::Most tests => 5;
 
 my ($dh, $dname) = tempfile;
 close $dh;
 
-my $evented = DB::Evented->new("DBI:SQLite:dbname=$dname", "","");
+my $evented = DB::Evented->new("DBI:SQLite:dbname=$dname", "","", random_dbi_arg => 'foo');
 
 my $dbh = $evented->any_event_handler;
+# Evil test - will replace with wiretap in the near future (but that doesn't appear to build on perl 5.18
+is $dbh->{random_dbi_arg}, 'foo', "we have a random dbi arg set";
 my ($error, $result);
 my $cv = AnyEvent->condvar;
 
